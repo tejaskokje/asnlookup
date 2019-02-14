@@ -2,12 +2,30 @@ package asnlookup
 
 import (
 	"fmt"
+	"sort"
 )
 
 type NodeInfo struct {
 	Subnet uint32
 	Cidr   int
 	Asn    int
+}
+
+type NodeInfoList []NodeInfo
+
+func (n NodeInfoList) Len() int {
+	return len(n)
+}
+
+func (n NodeInfoList) Less(i, j int) bool {
+	if n[i].Cidr > n[j].Cidr {
+		return true
+	}
+	return false
+}
+
+func (n NodeInfoList) Swap(i, j int) {
+	n[i], n[j] = n[j], n[i]
 }
 
 type Node struct {
@@ -71,9 +89,9 @@ func Insert(t *Trie, key uint32, value int, prefixLen int) {
 	return
 }
 
-func Find(t *Trie, key uint32) []NodeInfo {
+func Find(t *Trie, key uint32) NodeInfoList {
 	//fmt.Printf("Find Key %032b\n", key)
-	infoList := []NodeInfo{}
+	infoList := NodeInfoList{}
 	root := t.Root
 	for i := 1; i <= 32; i++ {
 		child := (key) >> 31 & 0x1
@@ -100,6 +118,7 @@ func Find(t *Trie, key uint32) []NodeInfo {
 			valueList = append(valueList, root.Value)
 		}
 	*/
+	sort.Sort(infoList)
 	return infoList
 }
 
