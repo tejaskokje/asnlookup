@@ -58,23 +58,31 @@ func main() {
 
 	scanner := bufio.NewScanner(strings.NewReader(cfgStr))
 	for scanner.Scan() {
+		if strings.Contains(scanner.Text(), "#") {
+			continue
+		}
+
 		parts := strings.Split(strings.Trim(scanner.Text(), " "), " ")
 		isValidCidr := asnlookup.IsValidIPv4Cidr(parts[0])
 		if isValidCidr == false {
-			fmt.Println("Invalid input: ", parts[0])
+			//fmt.Println("Invalid input: ", parts[0])
 		} else {
 			ip := strings.Split(parts[0], "/")
 			//fmt.Println(asnlookup.IPv4ToInt(net.ParseIP(ip[0])))
 			ipInt := asnlookup.IPv4ToInt(net.ParseIP(ip[0]))
 			prefix, _ := strconv.Atoi(ip[1])
-			mask := uint32(^(uint32(0))) << uint32(prefix)
+			mask := uint32(^(uint32(0))) << uint32(32-prefix)
 			asn, _ := strconv.Atoi(parts[1])
-			asnlookup.Insert(t, ipInt&uint32(mask), asn, prefix)
+			//fmt.Printf("%032b\n", ipInt)
+			//fmt.Printf("%032b\n", mask)
+			//fmt.Println(ipInt, ipInt&mask, prefix, asn)
+			asnlookup.Insert(t, ipInt&mask, asn, prefix)
 		}
 	}
 
 	//asnlookup.Insert(t, 12, 50, 4)
 	fmt.Println(asnlookup.Find(t, 134744072))
+	//fmt.Println("Dump Trie")
 	//asnlookup.DumpTrie(t)
 
 }

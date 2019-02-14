@@ -4,10 +4,14 @@ import (
 	"fmt"
 )
 
+type NodeInfo struct {
+	Subnet uint32
+	Cidr   int
+	Asn    int
+}
+
 type Node struct {
-	Label uint32
-	// value is asn for this prefix
-	Value int
+	Info  []NodeInfo
 	Left  *Node
 	Right *Node
 }
@@ -28,17 +32,23 @@ func NewTrie() *Trie {
 
 func NewNode() *Node {
 	return &Node{
-		Value: -1,
+		Info:  []NodeInfo{},
 		Left:  nil,
 		Right: nil,
 	}
 
 }
 func Insert(t *Trie, key uint32, value int, prefixLen int) {
-	fmt.Println("Inserting ", key, value, prefixLen)
+	//fmt.Println("Inserting ", key, value, prefixLen)
 	root := t.Root
-	for i := 0; i < prefixLen; i++ {
-		child := (key << uint32(i)) & 1
+	origKey := key
+	//fmt.Printf("%d %032b, %b, %032b\n", key, key, 0x80000000, (key << uint32(1)))
+	for i := 1; i <= 32; i++ {
+		child := ((key) >> 31) & 0x1
+		key = key << 1
+		//fmt.Printf("%b | ", child)
+		//fmt.Printf("child %b key %032b\n", child, key)
+
 		if child == 0 {
 			if root.Left == nil {
 				root.Left = NewNode()
@@ -52,29 +62,32 @@ func Insert(t *Trie, key uint32, value int, prefixLen int) {
 
 			root = root.Right
 		}
+		if key == 0 {
+			break
+		}
 	}
 
-	root.Label = key
-	root.Value = value
-
+	root.Info = append(root.Info, NodeInfo{origKey, prefixLen, value})
 	return
 }
 
-func Find(t *Trie, key uint32) []int {
-
-	valueList := []int{}
+func Find(t *Trie, key uint32) []NodeInfo {
+	//fmt.Printf("Find Key %032b\n", key)
+	infoList := []NodeInfo{}
 	root := t.Root
-	for i := 0; i < 32; i++ {
-		child := (key << uint32(i)) & 1
+	for i := 1; i <= 32; i++ {
+		child := (key) >> 31 & 0x1
+		key = key << 1
+		//fmt.Printf("child %b key %032b\n", child, key)
 		if child == 0 && root.Left != nil {
-			if root.Value != -1 {
-				valueList = append(valueList, root.Value)
+			if len(root.Left.Info) > 0 {
+				infoList = append(infoList, root.Left.Info...)
 			}
 			root = root.Left
 		} else if child == 1 && root.Right != nil {
 
-			if root.Value != -1 {
-				valueList = append(valueList, root.Value)
+			if len(root.Right.Info) > 0 {
+				infoList = append(infoList, root.Right.Info...)
 			}
 
 			root = root.Right
@@ -82,12 +95,12 @@ func Find(t *Trie, key uint32) []int {
 			break
 		}
 	}
-
-	if root.Value != -1 {
-		valueList = append(valueList, root.Value)
-	}
-
-	return valueList
+	/*
+		if root.Value != -1 {
+			valueList = append(valueList, root.Value)
+		}
+	*/
+	return infoList
 }
 
 func DumpTrie(t *Trie) {
@@ -111,7 +124,12 @@ func DumpNode(n *Node, dir int) {
 			relation = "unknown"
 		}
 
-		fmt.Println(relation, n.Label, n.Value)
+		fmt.Println(relation)
+
+		for _, info := range n.Info {
+			fmt.Println("\t", info.Subnet, info.Cidr, info.Asn)
+		}
+
 		DumpNode(n.Left, 0)
 		DumpNode(n.Right, 1)
 	}
