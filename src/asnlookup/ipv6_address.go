@@ -1,7 +1,9 @@
 package asnlookup
 
 import (
+	"encoding/hex"
 	"errors"
+	//"fmt"
 	"strconv"
 	"strings"
 )
@@ -10,33 +12,32 @@ var (
 	ErrInvalidIPv6Address = errors.New("Invalid IPv6 Address")
 )
 
-type IPv6Address []byte
+type IPv6Address [16]byte
 
 func ParseIPv6(ipStr string) (IPv6Address, error) {
-	//var bytes []byte
-	bytes := make([]byte, 39)
 
+	ipv6Address := IPv6Address{}
+
+	bytes := make([]byte, 32)
+	ipStr = strings.ToLower(ipStr)
 	if IsValidIPv6(ipStr) == false {
 		return IPv6Address{}, ErrInvalidIPv6Address
 	}
 
-	ipStr = strings.ToLower(ipStr)
+	byteCount := 0
+
+	// If IPv6 address is in compressed format, convert it into
+	// uncompressed canonical format without "::" or ":"
 	if strings.Contains(ipStr, "::") {
 		parts := strings.Split(ipStr, "::")
 
-		byteCount := 0
 		for idx, part := range parts {
 			hextects := strings.Split(part, ":")
 			if idx == 1 {
-				numColonSoFar := int(byteCount / 5)
-				zeroFill := 7 - numColonSoFar - (len(hextects) - 1)
-				for i := 1; i <= zeroFill*4; i++ {
+				zeroFill := 32 - byteCount - (len(hextects) * 4)
+				for i := 1; i <= zeroFill; i++ {
 					bytes[byteCount] = '0'
 					byteCount++
-					if i%4 == 0 {
-						bytes[byteCount] = ':'
-						byteCount++
-					}
 				}
 			}
 			for _, h := range hextects {
@@ -51,31 +52,63 @@ func ParseIPv6(ipStr string) (IPv6Address, error) {
 					bytes[byteCount] = h[i]
 					byteCount++
 				}
-				if byteCount/5 < 7 {
-					bytes[byteCount] = ':'
-					byteCount++
-				}
 			}
 		}
+	} else {
+		// TODO Handle case where we have uncompressed format but missing 0
+		parts := strings.Split(ipStr, ":")
 
+		for _, part := range parts {
+			l := len(part)
+			zeroFill := 4 - len(part)
+			for i := 0; i < zeroFill; i++ {
+				bytes[byteCount] = '0'
+				byteCount++
+			}
+
+			for i := 0; i < l; i++ {
+				bytes[byteCount] = part[i]
+				byteCount++
+			}
+		}
 	}
 
-	return IPv6Address(bytes), nil
+	byteCount = 0
+	// We have address in uncompressed canonical form in "bytes" slice
+	for i := 0; i < len(bytes); i += 2 {
+		src := bytes[i : i+2]
+		dst := make([]byte, 2)
+		_, err := hex.Decode(dst, src)
+		if err != nil {
+			return ipv6Address, err
+		}
+
+		ipv6Address[byteCount] = dst[0]
+		byteCount++
+	}
+	return ipv6Address, nil
 }
 
-func IPv6ToInt(s string) (uint32, error) {
+func IPv6ToInt(s string) ([2]uint64, error) {
 
-	var ipv6Int uint32 = 0
-	/*
-		ipAddr, err := ParseIPv4(s)
-		if err != nil {
-			return ipv4Int, err
-		}
-		ipv4Int = (ipv4Int | uint32(ipAddr[0])) << 8
-		ipv4Int = (ipv4Int | uint32(ipAddr[1])) << 8
-		ipv4Int = (ipv4Int | uint32(ipAddr[2])) << 8
-		ipv4Int = (ipv4Int | uint32(ipAddr[3]))
-	*/
+	var ipv6Int [2]uint64
+
+	ipv6Addr, err := ParseIPv6(s)
+	if err != nil {
+		return ipv6Int, err
+	}
+
+	for i := 0; i < 7; i++ {
+		ipv6Int[0] = (ipv6Int[0] | uint64(ipv6Addr[i])) << 8
+	}
+	ipv6Int[0] = (ipv6Int[0] | uint64(ipv6Addr[7]))
+
+	for i := 8; i < 15; i++ {
+		ipv6Int[1] = (ipv6Int[1] | uint64(ipv6Addr[i])) << 8
+	}
+
+	ipv6Int[1] = (ipv6Int[1] | uint64(ipv6Addr[15]))
+	//fmt.Println(ipv6Int)
 	return ipv6Int, nil
 }
 
@@ -89,7 +122,7 @@ func IsValidIPv6(ip string) bool {
 	if len(cHextets) == 2 {
 		leftHextets := strings.Split(cHextets[0], ":")
 		rightHextets := strings.Split(cHextets[1], ":")
-		if len(leftHextets)+len(rightHextets) > 8 {
+		if len(leftHextets)+len(rightHextets) > 7 {
 			return false
 		}
 
