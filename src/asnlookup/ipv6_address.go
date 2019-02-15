@@ -3,7 +3,6 @@ package asnlookup
 import (
 	"encoding/hex"
 	"errors"
-	//"fmt"
 	"strconv"
 	"strings"
 )

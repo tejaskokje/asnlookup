@@ -51,13 +51,17 @@ func IsValidIPv4(ip string) bool {
 		return false
 	}
 
-	for _, o := range octets {
+	for idx, o := range octets {
 		num, err := strconv.Atoi(o)
 		if err != nil {
 			return false
 		}
 
 		if num < 0 || num > 255 {
+			return false
+		}
+
+		if idx == 0 && num == 0 {
 			return false
 		}
 	}

@@ -75,49 +75,30 @@ func TestIPv6ToInt(t *testing.T) {
 			want: [2]uint64{2306139568115548171, 2954937499674},
 			err:  nil,
 		},
-		/*
-			{
-				name: "More than one compression IPv6 Address Lowercase",
-				ip:   "2001:db8::0:b::1a",
-				want: false,
-			},
-
-			{
-				name: "Compressed IPv6 Address Uppercase",
-				ip:   "2001:DB8:0:b::1A",
-				want: true,
-			},
-			{
-				name: "Uncompressed IPv6 Address Uppercase",
-				ip:   "2001:0DB8:0000:000B:0000:0000:0000:001A",
-				want: true,
-			},
-			{
-				name: "Uncompressed IPv6 Address Lowercase multiple ::",
-				ip:   "2001:0DB8:0000:000B:0000::0000:0000::001A",
-				want: false,
-			},
-			{
-				name: "More than one compression IPv6 Address Uppercase",
-				ip:   "2001:DB8::0:b::1A",
-				want: false,
-			},
-
-			{
-				name: "Compressed IPv6 Address Mixedcase",
-				ip:   "2001:db8:C:b::1A",
-				want: true,
-			},
-			{
-				name: "Uncompressed IPv6 Address Mixedcase",
-				ip:   "2001:0db8:0000:000b:0C00:0000:0000:001A",
-				want: true,
-			},
-			{
-				name: "More than one compression IPv6 Address Mixedcase",
-				ip:   "2001:db8::C:b::1A",
-				want: false,
-			},*/
+		{
+			name: "Uncompressed IPv6 Address Lowercase With 0 In Higher 64 Bits",
+			ip:   "0000:0000:0000:0000:0000:02b0:0000:001a",
+			want: [2]uint64{0, 2954937499674},
+			err:  nil,
+		},
+		{
+			name: "Uncompressed IPv6 Address Lowercase With 0 In Lower 64 Bits",
+			ip:   "2001:0db8:0000:000b:0000:0000:0000:0000",
+			want: [2]uint64{2306139568115548171, 0},
+			err:  nil,
+		},
+		{
+			name: "Uncompressed IPv6 Address Lowercase With 1 In Higher 64 Bits",
+			ip:   "ffff:ffff:ffff:ffff:0000:02b0:0000:001a",
+			want: [2]uint64{18446744073709551615, 2954937499674},
+			err:  nil,
+		},
+		{
+			name: "Uncompressed IPv6 Address Lowercase With 1 In Lower 64 Bits",
+			ip:   "2001:0db8:0000:000b:ffff:ffff:ffff:ffff",
+			want: [2]uint64{2306139568115548171, 18446744073709551615},
+			err:  nil,
+		},
 	}
 
 	for _, testCase := range testCases {
