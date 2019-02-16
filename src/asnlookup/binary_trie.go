@@ -6,7 +6,8 @@ import (
 )
 
 type NodeInfo struct {
-	Subnet uint32
+	Key    uint32
+	Subnet string
 	Cidr   int
 	Asn    int
 }
@@ -43,7 +44,6 @@ type Trie struct {
 func NewTrie() *Trie {
 	return &Trie{
 		TrieType: 0, //v4
-		Size:     0,
 		Root:     NewNode(),
 	}
 }
@@ -56,7 +56,7 @@ func NewNode() *Node {
 	}
 
 }
-func Insert(t *Trie, key uint32, value int, prefixLen int) {
+func Insert(t *Trie, key uint32, subnet string, value int, prefixLen int) {
 	//fmt.Println("Inserting ", key, value, prefixLen)
 	root := t.Root
 	origKey := key
@@ -85,7 +85,7 @@ func Insert(t *Trie, key uint32, value int, prefixLen int) {
 		}
 	}
 
-	root.Info = append(root.Info, NodeInfo{origKey, prefixLen, value})
+	root.Info = append(root.Info, NodeInfo{origKey, subnet, prefixLen, value})
 	return
 }
 
@@ -113,11 +113,7 @@ func Find(t *Trie, key uint32) NodeInfoList {
 			break
 		}
 	}
-	/*
-		if root.Value != -1 {
-			valueList = append(valueList, root.Value)
-		}
-	*/
+
 	sort.Sort(infoList)
 	return infoList
 }
