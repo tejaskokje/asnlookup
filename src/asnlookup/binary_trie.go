@@ -6,7 +6,7 @@ import (
 )
 
 type NodeInfo struct {
-	Key    uint32
+	//IPAddressKey uint32
 	Subnet string
 	Cidr   int
 	Asn    int
@@ -56,10 +56,12 @@ func NewNode() *Node {
 	}
 
 }
-func Insert(t *Trie, key uint32, subnet string, value int, prefixLen int) {
+func Insert(t *Trie, key uint32, value int, prefixLen int) {
 	//fmt.Println("Inserting ", key, value, prefixLen)
+	// Safe to ignore error below as key will already be sanitized by this time
+	subnet, _ := IntToIPv4(key)
 	root := t.Root
-	origKey := key
+	//origKey := key
 	//fmt.Printf("%d %032b, %b, %032b\n", key, key, 0x80000000, (key << uint32(1)))
 	for i := 1; i <= 32; i++ {
 		child := ((key) >> 31) & 0x1
@@ -85,7 +87,7 @@ func Insert(t *Trie, key uint32, subnet string, value int, prefixLen int) {
 		}
 	}
 
-	root.Info = append(root.Info, NodeInfo{origKey, subnet, prefixLen, value})
+	root.Info = append(root.Info, NodeInfo{subnet, prefixLen, value})
 	return
 }
 

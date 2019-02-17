@@ -1,6 +1,7 @@
 package asnlookup
 
 import (
+	"reflect"
 	"testing"
 )
 
@@ -8,106 +9,48 @@ func TestParseIPv6(t *testing.T) {
 	testCases := []struct {
 		name string
 		ip   string
-		want IPv6Address
+		want []byte
 		err  error
 	}{
 		{
 			name: "3 Compressed Hextect IPv6 Address Lowercase",
 			ip:   "2001:db8:0:b::1a",
-			want: IPv6Address{32, 1, 13, 184, 0, 0, 0, 11, 0, 0, 0, 0, 0, 0, 0, 26},
+			want: []byte{32, 1, 13, 184, 0, 0, 0, 11, 0, 0, 0, 0, 0, 0, 0, 26},
 			err:  nil,
 		},
 		{
 			name: "2 Compressed Hextect IPv6 Address Lowercase",
 			ip:   "2001:db8:0:b::2a:1a",
-			want: IPv6Address{32, 1, 13, 184, 0, 0, 0, 11, 0, 0, 0, 0, 0, 42, 0, 26},
+			want: []byte{32, 1, 13, 184, 0, 0, 0, 11, 0, 0, 0, 0, 0, 42, 0, 26},
 			err:  nil,
 		},
 		{
 			name: "Uncompressed Hextect IPv6 Address Lowercase",
 			ip:   "2001:0db8:0000:000b:0000:0000:0000:001a",
-			want: IPv6Address{32, 1, 13, 184, 0, 0, 0, 11, 0, 0, 0, 0, 0, 0, 0, 26},
+			want: []byte{32, 1, 13, 184, 0, 0, 0, 11, 0, 0, 0, 0, 0, 0, 0, 26},
 			err:  nil,
 		},
 		{
 			name: "Error In IPv6 Address Format",
 			ip:   "2001:0db8:0000:000b:0000:0000:0000::001a",
-			want: IPv6Address{},
+			want: []byte{},
 			err:  ErrInvalidIPv6Address,
 		},
 		{
 			name: "Uncompressed Hextect IPv6 Address Lowercase with missing 0s",
 			ip:   "2001:db8:0000:b:0000:0000:0000:1a",
-			want: IPv6Address{32, 1, 13, 184, 0, 0, 0, 11, 0, 0, 0, 0, 0, 0, 0, 26},
+			want: []byte{32, 1, 13, 184, 0, 0, 0, 11, 0, 0, 0, 0, 0, 0, 0, 26},
 			err:  nil,
 		},
 	}
 
 	for _, testCase := range testCases {
-		got, err := ParseIPv6(testCase.ip)
+		got, err := parseIPv6(testCase.ip)
 		if err != testCase.err {
 			t.Fatalf("%s: received error does not match: got %v, want %v", testCase.name, err, testCase.err)
 		}
 
-		if got != testCase.want {
-			t.Fatalf("%s: result does not match: got %v, want %v", testCase.name, got, testCase.want)
-		}
-	}
-
-}
-
-func TestIPv6ToInt(t *testing.T) {
-	testCases := []struct {
-		name string
-		ip   string
-		want [2]uint64
-		err  error
-	}{
-		{
-			name: "Compressed IPv6 Address Lowercase",
-			ip:   "2001:db8:0:b::1a",
-			want: [2]uint64{2306139568115548171, 26},
-			err:  nil,
-		},
-		{
-			name: "Uncompressed IPv6 Address Lowercase",
-			ip:   "2001:0db8:0000:000b:0000:02b0:0000:001a",
-			want: [2]uint64{2306139568115548171, 2954937499674},
-			err:  nil,
-		},
-		{
-			name: "Uncompressed IPv6 Address Lowercase With 0 In Higher 64 Bits",
-			ip:   "0000:0000:0000:0000:0000:02b0:0000:001a",
-			want: [2]uint64{0, 2954937499674},
-			err:  nil,
-		},
-		{
-			name: "Uncompressed IPv6 Address Lowercase With 0 In Lower 64 Bits",
-			ip:   "2001:0db8:0000:000b:0000:0000:0000:0000",
-			want: [2]uint64{2306139568115548171, 0},
-			err:  nil,
-		},
-		{
-			name: "Uncompressed IPv6 Address Lowercase With 1 In Higher 64 Bits",
-			ip:   "ffff:ffff:ffff:ffff:0000:02b0:0000:001a",
-			want: [2]uint64{18446744073709551615, 2954937499674},
-			err:  nil,
-		},
-		{
-			name: "Uncompressed IPv6 Address Lowercase With 1 In Lower 64 Bits",
-			ip:   "2001:0db8:0000:000b:ffff:ffff:ffff:ffff",
-			want: [2]uint64{2306139568115548171, 18446744073709551615},
-			err:  nil,
-		},
-	}
-
-	for _, testCase := range testCases {
-		got, err := IPv6ToInt(testCase.ip)
-		if err != testCase.err {
-			t.Fatalf("%s: received error does not match: got %v, want %v", testCase.name, err, testCase.err)
-		}
-
-		if got != testCase.want {
+		if reflect.DeepEqual(got, testCase.want) != true {
 			t.Fatalf("%s: result does not match: got %v, want %v", testCase.name, got, testCase.want)
 		}
 	}
@@ -175,7 +118,7 @@ func TestIsValidIPv6(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		got := IsValidIPv6(testCase.ip)
+		got := isValidIPv6(testCase.ip)
 		if got != testCase.want {
 			t.Fatalf("%s: result does not match: got %v, want %v", testCase.name, got, testCase.want)
 		}
@@ -183,6 +126,121 @@ func TestIsValidIPv6(t *testing.T) {
 
 }
 
+func TestIPv6ToInt(t *testing.T) {
+	testCases := []struct {
+		name string
+		ip   string
+		want [2]uint64
+		err  error
+	}{
+		{
+			name: "Compressed IPv6 Address Lowercase",
+			ip:   "2001:db8:0:b::1a",
+			want: [2]uint64{2306139568115548171, 26},
+			err:  nil,
+		},
+		{
+			name: "Uncompressed IPv6 Address Lowercase",
+			ip:   "2001:0db8:0000:000b:0000:02b0:0000:001a",
+			want: [2]uint64{2306139568115548171, 2954937499674},
+			err:  nil,
+		},
+		{
+			name: "Uncompressed IPv6 Address Lowercase With 0 In Higher 64 Bits",
+			ip:   "0000:0000:0000:0000:0000:02b0:0000:001a",
+			want: [2]uint64{0, 2954937499674},
+			err:  nil,
+		},
+		{
+			name: "Uncompressed IPv6 Address Lowercase With 0 In Lower 64 Bits",
+			ip:   "2001:0db8:0000:000b:0000:0000:0000:0000",
+			want: [2]uint64{2306139568115548171, 0},
+			err:  nil,
+		},
+		{
+			name: "Uncompressed IPv6 Address Lowercase With 1 In Higher 64 Bits",
+			ip:   "ffff:ffff:ffff:ffff:0000:02b0:0000:001a",
+			want: [2]uint64{18446744073709551615, 2954937499674},
+			err:  nil,
+		},
+		{
+			name: "Uncompressed IPv6 Address Lowercase With 1 In Lower 64 Bits",
+			ip:   "2001:0db8:0000:000b:ffff:ffff:ffff:ffff",
+			want: [2]uint64{2306139568115548171, 18446744073709551615},
+			err:  nil,
+		},
+	}
+
+	for _, testCase := range testCases {
+		got, err := IPv6ToInt(testCase.ip)
+		if err != testCase.err {
+			t.Fatalf("%s: received error does not match: got %v, want %v", testCase.name, err, testCase.err)
+		}
+
+		if got != testCase.want {
+			t.Fatalf("%s: result does not match: got %v, want %v", testCase.name, got, testCase.want)
+		}
+	}
+
+}
+func TestIntToIPv6(t *testing.T) {
+	testCases := []struct {
+		name string
+		ip   [2]uint64
+		want string
+		err  error
+	}{
+		{
+			name: "Compressed IPv6 Address Lowercase",
+			ip:   [2]uint64{2306139568115548171, 26},
+			want: "2001:db8:0:b:0:0:0:1a",
+			err:  nil,
+		},
+
+		{
+			name: "Uncompressed IPv6 Address Lowercase",
+			ip:   [2]uint64{2306139568115548171, 2954937499674},
+			want: "2001:db8:0:b:0:2b0:0:1a",
+			err:  nil,
+		}, /*
+			{
+				name: "Uncompressed IPv6 Address Lowercase With 0 In Higher 64 Bits",
+				ip:   "0000:0000:0000:0000:0000:02b0:0000:001a",
+				want: [2]uint64{0, 2954937499674},
+				err:  nil,
+			},
+			{
+				name: "Uncompressed IPv6 Address Lowercase With 0 In Lower 64 Bits",
+				ip:   "2001:0db8:0000:000b:0000:0000:0000:0000",
+				want: [2]uint64{2306139568115548171, 0},
+				err:  nil,
+			},
+			{
+				name: "Uncompressed IPv6 Address Lowercase With 1 In Higher 64 Bits",
+				ip:   "ffff:ffff:ffff:ffff:0000:02b0:0000:001a",
+				want: [2]uint64{18446744073709551615, 2954937499674},
+				err:  nil,
+			},
+			{
+				name: "Uncompressed IPv6 Address Lowercase With 1 In Lower 64 Bits",
+				ip:   "2001:0db8:0000:000b:ffff:ffff:ffff:ffff",
+				want: [2]uint64{2306139568115548171, 18446744073709551615},
+				err:  nil,
+			},*/
+	}
+
+	for _, testCase := range testCases {
+		got, err := IntToIPv6(testCase.ip)
+		if err != testCase.err {
+			t.Fatalf("%s: received error does not match: got %v, want %v", testCase.name, err, testCase.err)
+		}
+
+		if got != testCase.want {
+			t.Fatalf("%s: result does not match: got %v, want %v", testCase.name, got, testCase.want)
+		}
+	}
+
+}
 func TestIsValidIPv6Cidr(t *testing.T) {
 	testCases := []struct {
 		name string

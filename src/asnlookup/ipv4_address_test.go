@@ -1,6 +1,7 @@
 package asnlookup
 
 import (
+	"reflect"
 	"testing"
 )
 
@@ -8,42 +9,42 @@ func TestParseIPv4(t *testing.T) {
 	testCases := []struct {
 		name string
 		ip   string
-		want IPv4Address
+		want []byte
 		err  error
 	}{
 		{
 			name: "Parse Valid IPv4 Address",
 			ip:   "192.168.1.1",
-			want: IPv4Address{192, 168, 1, 1},
+			want: []byte{192, 168, 1, 1},
 			err:  nil,
 		},
 		{
 			name: "Parse Invalid IPv4 Address",
 			ip:   "500.500.500.1",
-			want: IPv4Address{},
+			want: []byte{},
 			err:  ErrInvalidIPv4Address,
 		},
 		{
 			name: "Parse Invalid IPv4 Address With All 0",
 			ip:   "0.0.0.0",
-			want: IPv4Address{},
+			want: []byte{},
 			err:  ErrInvalidIPv4Address,
 		},
 		{
 			name: "Parse Valid IPv4 Address With 0",
 			ip:   "192.0.0.1",
-			want: IPv4Address{192, 0, 0, 1},
+			want: []byte{192, 0, 0, 1},
 			err:  nil,
 		},
 	}
 
 	for _, testCase := range testCases {
-		got, err := ParseIPv4(testCase.ip)
+		got, err := parseIPv4(testCase.ip)
 		if err != testCase.err {
 			t.Fatalf("%s: received error does not match: got %v, want %v", testCase.name, err, testCase.err)
 		}
 
-		if got != testCase.want {
+		if reflect.DeepEqual(got, testCase.want) != true {
 			t.Fatalf("%s: result does not match: got %v, want %v", testCase.name, got, testCase.want)
 		}
 	}
@@ -85,6 +86,58 @@ func TestIPv4ToInt(t *testing.T) {
 
 	for _, testCase := range testCases {
 		got, err := IPv4ToInt(testCase.ip)
+		if err != testCase.err {
+			t.Fatalf("%s: received error does not match: got %v, want %v", testCase.name, err, testCase.err)
+		}
+
+		if got != testCase.want {
+			t.Fatalf("%s: result does not match: got %v, want %v", testCase.name, got, testCase.want)
+		}
+	}
+
+}
+
+func TestIntToIPv4(t *testing.T) {
+	testCases := []struct {
+		name string
+		ip   uint32
+		want string
+		err  error
+	}{
+		{
+			name: "Valid IPv4 Address",
+			ip:   134744072,
+			want: "8.8.8.8",
+			err:  nil,
+		},
+		{
+			name: "Valid IPv4 Address With 0 In Middle Octets",
+			ip:   3221225473,
+			want: "192.0.0.1",
+			err:  nil,
+		},
+		{
+			name: "Valid IPv4 Address With All 1s",
+			ip:   4294967295,
+			want: "255.255.255.255",
+			err:  nil,
+		},
+		{
+			name: "InValid IPv4 Address With All 0s",
+			ip:   0,
+			want: "",
+			err:  ErrInvalidIPv4Address,
+		},
+		{
+			name: "Valid IPv4 Address With 0s In Lower Three Octets",
+			ip:   4261412864,
+			want: "254.0.0.0",
+			err:  nil,
+		},
+	}
+
+	for _, testCase := range testCases {
+		got, err := IntToIPv4(testCase.ip)
 		if err != testCase.err {
 			t.Fatalf("%s: received error does not match: got %v, want %v", testCase.name, err, testCase.err)
 		}
@@ -156,7 +209,7 @@ func TestIsValidIPv4(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		got := IsValidIPv4(testCase.ip)
+		got := isValidIPv4(testCase.ip)
 		if got != testCase.want {
 			t.Fatalf("%s: result does not match: got %v, want %v", testCase.name, got, testCase.want)
 		}
