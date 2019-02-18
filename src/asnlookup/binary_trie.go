@@ -80,11 +80,11 @@ func Insert(t *Trie, ip IPAddress) {
 	return
 }
 
-func Find(t *Trie, ip IPAddress) NodeInfoList {
+func Find(cfg *Config) NodeInfoList {
 	infoList := NodeInfoList{}
-	root := t.Root
-	for i := 1; i <= ip.GetNumBitsInAddress(); i++ {
-		child := ip.GetNthHighestBit(uint8(i))
+	root := cfg.trie.Root
+	for i := 1; i <= cfg.IPToFind.GetNumBitsInAddress(); i++ {
+		child := cfg.IPToFind.GetNthHighestBit(uint8(i))
 		if child == 0 && root.Left != nil {
 			if len(root.Left.Info) > 0 {
 				infoList = append(infoList, root.Left.Info...)

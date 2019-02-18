@@ -54,14 +54,16 @@ func TestInsertFindIPv4(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		trie := NewTrie()
+		cfg := &Config{}
+		cfg.trie = NewTrie()
 		for _, ipCidr := range testCase.ipCidrList {
 			ipv4Address, err := NewIPv4Address(ipCidr.ip, ipCidr.asn)
 			if err != testCase.err {
 				t.Fatalf("%s: received error for %s/%d does not match: got %v, want %v", testCase.name, ipCidr.ip, ipCidr.asn, err, testCase.err)
 			}
 
-			Insert(trie, ipv4Address)
+			cfg.IPAddressList = append(cfg.IPAddressList, ipv4Address)
+			Insert(cfg.trie, ipv4Address)
 		}
 
 		ipv4Address, err := NewIPv4Address(testCase.ipToFind, -1)
@@ -69,7 +71,9 @@ func TestInsertFindIPv4(t *testing.T) {
 			t.Fatalf("%s: received error does not match: got %v, want %v", testCase.name, err, testCase.err)
 		}
 
-		got := Find(trie, ipv4Address)
+		cfg.IPToFind = ipv4Address
+
+		got := Find(cfg)
 		if reflect.DeepEqual(got, testCase.want) != true {
 			t.Fatalf("%s: result does not match: got %v, want %v", testCase.name, got, testCase.want)
 		}
@@ -121,14 +125,16 @@ func TestInsertFindIPv6(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		trie := NewTrie()
+		cfg := &Config{}
+		cfg.trie = NewTrie()
 		for _, ipCidr := range testCase.ipCidrList {
 			ipv6Address, err := NewIPv6Address(ipCidr.ip, ipCidr.asn)
 			if err != testCase.err {
 				t.Fatalf("%s: received error for %s/%d does not match: got %v, want %v", testCase.name, ipCidr.ip, ipCidr.asn, err, testCase.err)
 			}
 
-			Insert(trie, ipv6Address)
+			cfg.IPAddressList = append(cfg.IPAddressList, ipv6Address)
+			Insert(cfg.trie, ipv6Address)
 		}
 
 		ipv6Address, err := NewIPv6Address(testCase.ipToFind, -1)
@@ -136,7 +142,9 @@ func TestInsertFindIPv6(t *testing.T) {
 			t.Fatalf("%s: received error does not match: got %v, want %v", testCase.name, err, testCase.err)
 		}
 
-		got := Find(trie, ipv6Address)
+		cfg.IPToFind = ipv6Address
+
+		got := Find(cfg)
 		if reflect.DeepEqual(got, testCase.want) != true {
 			t.Fatalf("%s: result does not match: got %v, want %v", testCase.name, got, testCase.want)
 		}
