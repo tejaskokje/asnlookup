@@ -39,7 +39,7 @@ func main() {
 		}
 	}
 
-	nodeInfoList := asnlookup.Find(t, ipToFind)
+	nodeInfoList := asnlookup.Find(t, cfg.IPToFind)
 	for _, info := range nodeInfoList {
 		fmt.Printf("%s/%d %d\n", info.Subnet, info.Cidr, info.Asn)
 	}

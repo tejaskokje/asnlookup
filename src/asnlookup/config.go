@@ -33,7 +33,6 @@ func GetConfig() (*Config, error) {
 	}
 
 	reqIP := args[0]
-	var ipToFind IPAddress
 	if IsValidIPv4(reqIP) {
 		ipToFind, err := NewIPv4Address(reqIP+"/32", -1)
 		if err != nil {
