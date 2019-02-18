@@ -280,7 +280,7 @@ func TestParseIPv6(t *testing.T) {
 		},
 		{
 			name: "Uncompressed Hextect IPv6 Address Lowercase With Missing 0s",
-			ip:   "2001:db8:0000:b:0000:0000:0000:1a",
+			ip:   "2001:db8:0:b:00:00:0:1a",
 			want: []byte{32, 1, 13, 184, 0, 0, 0, 11, 0, 0, 0, 0, 0, 0, 0, 26},
 			err:  nil,
 		},

@@ -159,7 +159,6 @@ func parseIPv6(ipStr string) ([]byte, error) {
 			}
 		}
 	} else {
-		// TODO Handle case where we have uncompressed format but missing 0
 		parts := strings.Split(ipStr, ":")
 
 		for _, part := range parts {
@@ -178,7 +177,7 @@ func parseIPv6(ipStr string) ([]byte, error) {
 	}
 
 	byteCount = 0
-	// We have address in uncompressed canonical form in "bytes" slice
+	// We now have address in uncompressed canonical form in "bytes" slice
 	for i := 0; i < len(bytes); i += 2 {
 		src := bytes[i : i+2]
 		dst := make([]byte, 2)
