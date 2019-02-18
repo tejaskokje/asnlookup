@@ -48,7 +48,7 @@ func NewIPv6Address(ipCidr string, asn int) (IPAddress, error) {
 		mask1 = 0
 		mask2 = 128 - prefix
 	} else {
-		mask1 = prefix - 64
+		mask1 = 64 - prefix
 		mask2 = 64
 	}
 	ipv6Address.mask[0] = uint64(^(uint64(0))) << uint64(mask1)

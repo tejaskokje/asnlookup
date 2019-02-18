@@ -48,6 +48,9 @@ func main() {
 	scanner := bufio.NewScanner(strings.NewReader(cfg.IPCidrList))
 	for scanner.Scan() {
 		parts := strings.Split(strings.Trim(scanner.Text(), " "), " ")
+		if len(parts) != 2 {
+			continue
+		}
 		isValidCidr := isValidCidrFunc(parts[0])
 		if isValidCidr == true {
 			asn, err := strconv.Atoi(parts[1])
