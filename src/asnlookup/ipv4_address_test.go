@@ -51,7 +51,7 @@ func TestParseIPv4(t *testing.T) {
 
 }
 
-func TestIPv4ToInt(t *testing.T) {
+func TestIPv4StrToInt(t *testing.T) {
 	testCases := []struct {
 		name string
 		ip   string
@@ -85,7 +85,7 @@ func TestIPv4ToInt(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		got, err := IPv4ToInt(testCase.ip)
+		got, err := ipv4StrToInt(testCase.ip)
 		if err != testCase.err {
 			t.Fatalf("%s: received error does not match: got %v, want %v", testCase.name, err, testCase.err)
 		}
@@ -97,7 +97,7 @@ func TestIPv4ToInt(t *testing.T) {
 
 }
 
-func TestIntToIPv4(t *testing.T) {
+func TestIntToIPv4Str(t *testing.T) {
 	testCases := []struct {
 		name string
 		ip   uint32
@@ -137,7 +137,7 @@ func TestIntToIPv4(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		got, err := IntToIPv4(testCase.ip)
+		got, err := intToIPv4Str(testCase.ip)
 		if err != testCase.err {
 			t.Fatalf("%s: received error does not match: got %v, want %v", testCase.name, err, testCase.err)
 		}
@@ -209,7 +209,7 @@ func TestIsValidIPv4(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		got := isValidIPv4(testCase.ip)
+		got := IsValidIPv4(testCase.ip)
 		if got != testCase.want {
 			t.Fatalf("%s: result does not match: got %v, want %v", testCase.name, got, testCase.want)
 		}

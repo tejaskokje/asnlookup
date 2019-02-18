@@ -118,7 +118,7 @@ func TestIsValidIPv6(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		got := isValidIPv6(testCase.ip)
+		got := IsValidIPv6(testCase.ip)
 		if got != testCase.want {
 			t.Fatalf("%s: result does not match: got %v, want %v", testCase.name, got, testCase.want)
 		}
@@ -126,7 +126,7 @@ func TestIsValidIPv6(t *testing.T) {
 
 }
 
-func TestIPv6ToInt(t *testing.T) {
+func TestIPv6StrToInt(t *testing.T) {
 	testCases := []struct {
 		name string
 		ip   string
@@ -172,7 +172,7 @@ func TestIPv6ToInt(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		got, err := IPv6ToInt(testCase.ip)
+		got, err := ipv6StrToInt(testCase.ip)
 		if err != testCase.err {
 			t.Fatalf("%s: received error does not match: got %v, want %v", testCase.name, err, testCase.err)
 		}
@@ -183,7 +183,7 @@ func TestIPv6ToInt(t *testing.T) {
 	}
 
 }
-func TestIntToIPv6(t *testing.T) {
+func TestIntToIPv6Str(t *testing.T) {
 	testCases := []struct {
 		name string
 		ip   [2]uint64
@@ -230,7 +230,7 @@ func TestIntToIPv6(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		got, err := IntToIPv6(testCase.ip)
+		got, err := intToIPv6Str(testCase.ip)
 		if err != testCase.err {
 			t.Fatalf("%s: received error does not match: got %v, want %v", testCase.name, err, testCase.err)
 		}

@@ -12,9 +12,93 @@ var (
 	ErrInvalidIPv6Address = errors.New("Invalid IPv6 Address")
 )
 
+type IPv6Address struct {
+	cidrLen int
+	mask    [2]uint64
+	ip      [2]uint64
+	ipStr   string
+	asn     int
+}
+
+func NewIPv6Address(ipCidr string, asn int) (IPAddress, error) {
+	if IsValidIPv6Cidr(ipCidr) == false {
+		return nil, ErrInvalidIPV4Cidr
+	}
+
+	ipv6Address := IPv6Address{}
+	ip := strings.Split(ipCidr, "/")
+	ipInt, err := ipv6StrToInt(ip[0])
+	if err != nil {
+		return ipv6Address, err
+	}
+
+	prefix, err := strconv.Atoi(ip[1])
+	if err != nil {
+		return ipv6Address, err
+	}
+
+	ipv6Address.cidrLen = prefix
+	mask1 := 0
+	mask2 := 0
+	if prefix > 64 {
+		mask1 = 0
+		mask2 = 128 - prefix
+	} else {
+		mask1 = prefix - 64
+		mask2 = 64
+	}
+	ipv6Address.mask[0] = uint64(^(uint64(0))) << uint64(mask1)
+	ipv6Address.mask[1] = uint64(^(uint64(0))) << uint64(mask2)
+	ipv6Address.ip[0] = (ipInt[0] & ipv6Address.mask[0])
+	ipv6Address.ip[1] = (ipInt[1] & ipv6Address.mask[1])
+	//fmt.Println(ipv6Address.ip)
+	ipStr, err := intToIPv6Str(ipv6Address.ip)
+	if err != nil {
+		return ipv6Address, err
+	}
+	ipv6Address.ipStr = ipStr
+	ipv6Address.asn = asn
+
+	return ipv6Address, nil
+}
+
+func (ipv6 IPv6Address) GetString() string {
+	return ipv6.ipStr
+}
+
+func (ipv6 IPv6Address) GetNthHighestBit(n uint8) uint8 {
+
+	var nthBit uint64
+	if n <= 64 {
+		nthBit = ((ipv6.ip[0]) >> (64 - uint32(n))) & 0x1
+	} else if n > 64 && n <= 128 {
+		nthBit = ((ipv6.ip[1]) >> (64 - uint32(n-64))) & 0x1
+	} else {
+		nthBit = 255
+	}
+
+	return uint8(nthBit)
+}
+
+func (ipv6 IPv6Address) GetAsn() int {
+	return ipv6.asn
+}
+
+func (ipv6 IPv6Address) GetCidrLen() int {
+	return ipv6.cidrLen
+}
+
+func (ipv6 IPv6Address) GetNumBitsInAddress() int {
+	return 128
+}
+
+func (ipv6 IPv6Address) DumpBinary() string {
+	return fmt.Sprintf("%064b", ipv6.ip[0]) + " | " + fmt.Sprintf("%064b", ipv6.ip[1])
+}
+
 func parseIPv6(ipStr string) ([]byte, error) {
 
-	if isValidIPv6(ipStr) == false {
+	if IsValidIPv6(ipStr) == false {
 		return []byte{}, ErrInvalidIPv6Address
 	}
 
@@ -87,7 +171,7 @@ func parseIPv6(ipStr string) ([]byte, error) {
 	return ipv6Address, nil
 }
 
-func isValidIPv6(ip string) bool {
+func IsValidIPv6(ip string) bool {
 
 	cHextets := strings.Split(ip, "::")
 	if len(cHextets) > 2 {
@@ -129,7 +213,7 @@ func isValidIPv6(ip string) bool {
 	return true
 }
 
-func IPv6ToInt(s string) ([2]uint64, error) {
+func ipv6StrToInt(s string) ([2]uint64, error) {
 
 	var ipv6Int [2]uint64
 
@@ -152,7 +236,7 @@ func IPv6ToInt(s string) ([2]uint64, error) {
 	return ipv6Int, nil
 }
 
-func IntToIPv6(ip [2]uint64) (string, error) {
+func intToIPv6Str(ip [2]uint64) (string, error) {
 
 	var ipStr []string
 	for _, part := range ip {
@@ -192,7 +276,7 @@ func IsValidIPv6Cidr(cidr string) bool {
 		return false
 	}
 
-	if isValidIPv6(parts[0]) == false {
+	if IsValidIPv6(parts[0]) == false {
 		return false
 	}
 

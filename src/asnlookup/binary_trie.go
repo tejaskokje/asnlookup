@@ -6,7 +6,6 @@ import (
 )
 
 type NodeInfo struct {
-	//IPAddressKey uint32
 	Subnet string
 	Cidr   int
 	Asn    int
@@ -56,19 +55,11 @@ func NewNode() *Node {
 	}
 
 }
-func Insert(t *Trie, key uint32, value int, prefixLen int) {
-	//fmt.Println("Inserting ", key, value, prefixLen)
+func Insert(t *Trie, ip IPAddress) {
 	// Safe to ignore error below as key will already be sanitized by this time
-	subnet, _ := IntToIPv4(key)
 	root := t.Root
-	//origKey := key
-	//fmt.Printf("%d %032b, %b, %032b\n", key, key, 0x80000000, (key << uint32(1)))
-	for i := 1; i <= 32; i++ {
-		child := ((key) >> 31) & 0x1
-		key = key << 1
-		//fmt.Printf("%b | ", child)
-		//fmt.Printf("child %b key %032b\n", child, key)
-
+	for i := 1; i <= ip.GetCidrLen(); i++ {
+		child := ip.GetNthHighestBit(uint8(i))
 		if child == 0 {
 			if root.Left == nil {
 				root.Left = NewNode()
@@ -82,23 +73,17 @@ func Insert(t *Trie, key uint32, value int, prefixLen int) {
 
 			root = root.Right
 		}
-		if key == 0 {
-			break
-		}
 	}
 
-	root.Info = append(root.Info, NodeInfo{subnet, prefixLen, value})
+	root.Info = append(root.Info, NodeInfo{ip.GetString(), ip.GetCidrLen(), ip.GetAsn()})
 	return
 }
 
-func Find(t *Trie, key uint32) NodeInfoList {
-	//fmt.Printf("Find Key %032b\n", key)
+func Find(t *Trie, ip IPAddress) NodeInfoList {
 	infoList := NodeInfoList{}
 	root := t.Root
-	for i := 1; i <= 32; i++ {
-		child := (key) >> 31 & 0x1
-		key = key << 1
-		//fmt.Printf("child %b key %032b\n", child, key)
+	for i := 1; i <= ip.GetNumBitsInAddress(); i++ {
+		child := ip.GetNthHighestBit(uint8(i))
 		if child == 0 && root.Left != nil {
 			if len(root.Left.Info) > 0 {
 				infoList = append(infoList, root.Left.Info...)
