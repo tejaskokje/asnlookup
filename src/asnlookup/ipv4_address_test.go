@@ -37,7 +37,7 @@ func TestIPv4AddressGetString(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		ipv4Address, err := NewIPv4Address(testCase.ipCidr, testCase.asn)
+		ipv4Address, err := newIPv4Address(testCase.ipCidr, testCase.asn)
 		if err != testCase.err {
 			t.Fatalf("%s: received error does not match: got %v, want %v", testCase.name, err, testCase.err)
 		}
@@ -103,7 +103,7 @@ func TestIPv4AddressGetNthHighestBit(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		ipv4Address, err := NewIPv4Address(testCase.ipCidr, testCase.asn)
+		ipv4Address, err := newIPv4Address(testCase.ipCidr, testCase.asn)
 		if err != testCase.err {
 			t.Fatalf("%s: received error does not match: got %v, want %v", testCase.name, err, testCase.err)
 		}
@@ -149,7 +149,7 @@ func TestIPv4AddressGetAsn(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		ipv4Address, err := NewIPv4Address(testCase.ipCidr, testCase.asn)
+		ipv4Address, err := newIPv4Address(testCase.ipCidr, testCase.asn)
 		if err != testCase.err {
 			t.Fatalf("%s: received error does not match: got %v, want %v", testCase.name, err, testCase.err)
 		}
@@ -188,7 +188,7 @@ func TestIPv4AddressGetCidrLen(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		ipv4Address, err := NewIPv4Address(testCase.ipCidr, testCase.asn)
+		ipv4Address, err := newIPv4Address(testCase.ipCidr, testCase.asn)
 		if err != testCase.err {
 			t.Fatalf("%s: received error does not match: got %v, want %v", testCase.name, err, testCase.err)
 		}
@@ -227,7 +227,7 @@ func TestIPv4AddressGetNumBitsInAddress(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		ipv4Address, err := NewIPv4Address(testCase.ipCidr, testCase.asn)
+		ipv4Address, err := newIPv4Address(testCase.ipCidr, testCase.asn)
 		if err != testCase.err {
 			t.Fatalf("%s: received error does not match: got %v, want %v", testCase.name, err, testCase.err)
 		}
@@ -445,7 +445,7 @@ func TestIsValidIPv4(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		got := IsValidIPv4(testCase.ip)
+		got := isValidIPv4(testCase.ip)
 		if got != testCase.want {
 			t.Fatalf("%s: result does not match: got %v, want %v", testCase.name, got, testCase.want)
 		}
@@ -487,7 +487,7 @@ func TestIsValidIPv4Cidr(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		got := IsValidIPv4Cidr(testCase.ip)
+		got := isValidIPv4Cidr(testCase.ip)
 		if got != testCase.want {
 			t.Errorf("%s: result does not match: got %v, want %v", testCase.name, got, testCase.want)
 		}

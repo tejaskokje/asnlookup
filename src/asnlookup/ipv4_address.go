@@ -2,16 +2,20 @@ package asnlookup
 
 import (
 	"errors"
-	"fmt"
 	"strconv"
 	"strings"
 )
 
 var (
+	// ErrInvalidIPv4Address is returned when IPv4 address is badly formatted
 	ErrInvalidIPv4Address = errors.New("Invalid IPv4 Address")
-	ErrInvalidIPv4Cidr    = errors.New("Invalid IPv4 CIDR Format")
+
+	// ErrInvalidIPv4Cidr is returned when IPv4 address & CIDR is badly formatted
+	ErrInvalidIPv4Cidr = errors.New("Invalid IPv4 CIDR Format")
 )
 
+// IPv4Address struct satisfies IPAddress interface. This is used in trie Insert()
+// & Find() functions to make them IP address type agnostic in those functions
 type IPv4Address struct {
 	cidrLen int
 	mask    uint32
@@ -23,8 +27,9 @@ type IPv4Address struct {
 // Compile time check to ensure IPv4Address satiesfies IPAddress interface
 var _ IPAddress = &IPv4Address{}
 
-func NewIPv4Address(ipCidr string, asn int) (IPAddress, error) {
-	if IsValidIPv4Cidr(ipCidr) == false {
+// newIPv4Address returns new IPv4Address
+func newIPv4Address(ipCidr string, asn int) (IPAddress, error) {
+	if isValidIPv4Cidr(ipCidr) == false {
 		return nil, ErrInvalidIPv4Cidr
 	}
 
@@ -53,35 +58,41 @@ func NewIPv4Address(ipCidr string, asn int) (IPAddress, error) {
 	return ipv4Address, nil
 }
 
+// GetString returns IPv4 address in string format. This method
+// is needed to satisfy IPAddress interface
 func (ipv4 IPv4Address) GetString() string {
 	return ipv4.ipStr
 }
 
+// GetNthHighestBit returns nth highest bit for IPv4 address. This method
+// is needed to satisfy IPAddress interface
 func (ipv4 IPv4Address) GetNthHighestBit(n uint8) uint8 {
 	nthBit := ((ipv4.ip) >> (32 - uint32(n))) & 0x1
 	return uint8(nthBit)
 }
 
+// GetAsn returns ASN stored in IPv4 address. This method
+// is needed to satisfy IPAddress interface
 func (ipv4 IPv4Address) GetAsn() int {
 	return ipv4.asn
 }
 
+// GetCidrLen returns CIDR prefix length stored in IPv4 address.
+// This method is needed to satisfy IPAddress interface
 func (ipv4 IPv4Address) GetCidrLen() int {
 	return ipv4.cidrLen
 }
 
+// GetNumBitsInAddress returns number of bits in IPv4 address.
+// This method is needed to satisfy IPAddress interface
 func (ipv4 IPv4Address) GetNumBitsInAddress() int {
 	return 32
 }
 
-func (ipv4 IPv4Address) DumpBinary() string {
-	return fmt.Sprintf("%032b", ipv4.ip)
-
-}
-
+// Following are helper functions to parse, validate & convert IPv4 address
 func parseIPv4(ipStr string) ([]byte, error) {
 
-	if IsValidIPv4(ipStr) == false {
+	if isValidIPv4(ipStr) == false {
 		return []byte{}, ErrInvalidIPv4Address
 	}
 
@@ -99,7 +110,7 @@ func parseIPv4(ipStr string) ([]byte, error) {
 	return ipv4Addr, nil
 }
 
-func IsValidIPv4(ip string) bool {
+func isValidIPv4(ip string) bool {
 	octets := strings.Split(ip, ".")
 	if len(octets) != 4 {
 		return false
@@ -123,13 +134,13 @@ func IsValidIPv4(ip string) bool {
 	return true
 }
 
-func IsValidIPv4Cidr(cidr string) bool {
+func isValidIPv4Cidr(cidr string) bool {
 	parts := strings.Split(cidr, "/")
 	if len(parts) != 2 {
 		return false
 	}
 
-	if IsValidIPv4(parts[0]) == false {
+	if isValidIPv4(parts[0]) == false {
 		return false
 	}
 

@@ -18,14 +18,27 @@ type Config struct {
 }
 
 var (
-	ErrNoIPToFind            = errors.New("Please provide IPv4 or IPv6 address for ASN lookup")
-	ErrMoreThanOneIPToFind   = errors.New("Please provide only one IP address")
+	// ErrNoIPToFind is returned when input does not have target IP address to find
+	ErrNoIPToFind = errors.New("Please provide IPv4 or IPv6 address for ASN lookup")
+
+	// ErrMoreThanOneIPToFind is returned when there are more than one target IP address in input
+	ErrMoreThanOneIPToFind = errors.New("Please provide only one IP address")
+
+	// ErrInvalidInputIPAddress is returned when input IP address (IPv4 or IPv6) is invalid
 	ErrInvalidInputIPAddress = errors.New("Invalid IP address in input")
 )
 
+// GetConfig generates configuration and creates trie for lookup.
+// It uses CONFIG_FILE_PATH environment variable (to get IP, CIDR & ASN information) if defined.
+// Otherwise it uses default URL address to fetch configuration from.
+// It also gets target IP to lookup from command line arguments.
+// It returns a pointer to Config structure which holds all this information.
 func GetConfig(envTargetIP ...string) (*Config, error) {
 
 	cfg := &Config{}
+
+	// If target IP is passed in as an argument, then use that.
+	// Otherwise get it from environment variable.
 	var reqIPStr string
 	if len(envTargetIP) > 0 {
 		reqIPStr = envTargetIP[0]
@@ -43,29 +56,32 @@ func GetConfig(envTargetIP ...string) (*Config, error) {
 	var newIPAddressFunc func(string, int) (IPAddress, error)
 	var isValidCidrFunc func(string) bool
 
-	if IsValidIPv4(reqIPStr) {
-		ipToFind, err := NewIPv4Address(reqIPStr+"/32", -1)
+	// Setup correct information for trie creation based on IP address type
+	if isValidIPv4(reqIPStr) {
+		ipToFind, err := newIPv4Address(reqIPStr+"/32", -1)
 		if err != nil {
 			return nil, err
 		}
 
 		cfg.IPToFind = ipToFind
-		newIPAddressFunc = NewIPv4Address
-		isValidCidrFunc = IsValidIPv4Cidr
-	} else if IsValidIPv6(reqIPStr) {
-		ipToFind, err := NewIPv6Address(reqIPStr+"/128", -1)
+		newIPAddressFunc = newIPv4Address
+		isValidCidrFunc = isValidIPv4Cidr
+	} else if isValidIPv6(reqIPStr) {
+		ipToFind, err := newIPv6Address(reqIPStr+"/128", -1)
 		if err != nil {
 			return nil, err
 		}
 		cfg.IPToFind = ipToFind
-		newIPAddressFunc = NewIPv6Address
-		isValidCidrFunc = IsValidIPv6Cidr
+		newIPAddressFunc = newIPv6Address
+		isValidCidrFunc = isValidIPv6Cidr
 	} else {
 		return nil, ErrInvalidInputIPAddress
 	}
 
 	cfg.trie = NewTrie()
 
+	// Get configuration either from CONFIG_FILE_PATH environment variable or
+	// default configURL
 	var reader io.Reader
 	configURL := "http://lg01.infra.ring.nlnog.net/table.txt"
 	configFile := os.Getenv("CONFIG_FILE_PATH")
@@ -93,6 +109,7 @@ func GetConfig(envTargetIP ...string) (*Config, error) {
 		return nil, err
 	}
 
+	// Scan the text line by line and insert ipAddress information into trie
 	scanner := bufio.NewScanner(strings.NewReader(string(text)))
 	for scanner.Scan() {
 		parts := strings.Split(strings.Trim(scanner.Text(), " "), " ")

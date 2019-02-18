@@ -4,7 +4,7 @@ build: clean
 	@echo "Generated asnlookup binary in $(PWD)"
 
 test: 
-	go test ./...
+	GOPATH=$(GOPATH):$(PWD) go test ./...
 
 clean:
 	rm -rf asnlookup

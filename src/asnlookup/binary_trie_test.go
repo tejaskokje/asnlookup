@@ -57,7 +57,7 @@ func TestInsertFindIPv4(t *testing.T) {
 		cfg := &Config{}
 		cfg.trie = NewTrie()
 		for _, ipCidr := range testCase.ipCidrList {
-			ipv4Address, err := NewIPv4Address(ipCidr.ip, ipCidr.asn)
+			ipv4Address, err := newIPv4Address(ipCidr.ip, ipCidr.asn)
 			if err != testCase.err {
 				t.Fatalf("%s: received error for %s/%d does not match: got %v, want %v", testCase.name, ipCidr.ip, ipCidr.asn, err, testCase.err)
 			}
@@ -66,7 +66,7 @@ func TestInsertFindIPv4(t *testing.T) {
 			Insert(cfg.trie, ipv4Address)
 		}
 
-		ipv4Address, err := NewIPv4Address(testCase.ipToFind, -1)
+		ipv4Address, err := newIPv4Address(testCase.ipToFind, -1)
 		if err != testCase.err {
 			t.Fatalf("%s: received error does not match: got %v, want %v", testCase.name, err, testCase.err)
 		}
@@ -128,7 +128,7 @@ func TestInsertFindIPv6(t *testing.T) {
 		cfg := &Config{}
 		cfg.trie = NewTrie()
 		for _, ipCidr := range testCase.ipCidrList {
-			ipv6Address, err := NewIPv6Address(ipCidr.ip, ipCidr.asn)
+			ipv6Address, err := newIPv6Address(ipCidr.ip, ipCidr.asn)
 			if err != testCase.err {
 				t.Fatalf("%s: received error for %s/%d does not match: got %v, want %v", testCase.name, ipCidr.ip, ipCidr.asn, err, testCase.err)
 			}
@@ -137,7 +137,7 @@ func TestInsertFindIPv6(t *testing.T) {
 			Insert(cfg.trie, ipv6Address)
 		}
 
-		ipv6Address, err := NewIPv6Address(testCase.ipToFind, -1)
+		ipv6Address, err := newIPv6Address(testCase.ipToFind, -1)
 		if err != testCase.err {
 			t.Fatalf("%s: received error does not match: got %v, want %v", testCase.name, err, testCase.err)
 		}

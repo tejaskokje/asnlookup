@@ -37,7 +37,7 @@ func TestIPv6AddressGetString(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		ipv4Address, err := NewIPv6Address(testCase.ipCidr, testCase.asn)
+		ipv4Address, err := newIPv6Address(testCase.ipCidr, testCase.asn)
 		if err != testCase.err {
 			t.Fatalf("%s: received error does not match: got %v, want %v", testCase.name, err, testCase.err)
 		}
@@ -111,7 +111,7 @@ func TestIPv6AddressGetNthHighestBit(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		ipv4Address, err := NewIPv6Address(testCase.ipCidr, testCase.asn)
+		ipv4Address, err := newIPv6Address(testCase.ipCidr, testCase.asn)
 		if err != testCase.err {
 			t.Fatalf("%s: received error does not match: got %v, want %v", testCase.name, err, testCase.err)
 		}
@@ -149,7 +149,7 @@ func TestIPv6AddressGetAsn(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		ipv4Address, err := NewIPv6Address(testCase.ipCidr, testCase.asn)
+		ipv4Address, err := newIPv6Address(testCase.ipCidr, testCase.asn)
 		if err != testCase.err {
 			t.Fatalf("%s: received error does not match: got %v, want %v", testCase.name, err, testCase.err)
 		}
@@ -195,7 +195,7 @@ func TestIPv6AddressGetCidrLen(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		ipv4Address, err := NewIPv6Address(testCase.ipCidr, testCase.asn)
+		ipv4Address, err := newIPv6Address(testCase.ipCidr, testCase.asn)
 		if err != testCase.err {
 			t.Fatalf("%s: received error does not match: got %v, want %v", testCase.name, err, testCase.err)
 		}
@@ -234,7 +234,7 @@ func TestIPv6AddressGetNumBitsInAddress(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		ipv4Address, err := NewIPv6Address(testCase.ipCidr, testCase.asn)
+		ipv4Address, err := newIPv6Address(testCase.ipCidr, testCase.asn)
 		if err != testCase.err {
 			t.Fatalf("%s: received error does not match: got %v, want %v", testCase.name, err, testCase.err)
 		}
@@ -279,7 +279,7 @@ func TestParseIPv6(t *testing.T) {
 			err:  ErrInvalidIPv6Address,
 		},
 		{
-			name: "Uncompressed Hextect IPv6 Address Lowercase with missing 0s",
+			name: "Uncompressed Hextect IPv6 Address Lowercase With Missing 0s",
 			ip:   "2001:db8:0000:b:0000:0000:0000:1a",
 			want: []byte{32, 1, 13, 184, 0, 0, 0, 11, 0, 0, 0, 0, 0, 0, 0, 26},
 			err:  nil,
@@ -360,7 +360,7 @@ func TestIsValidIPv6(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		got := IsValidIPv6(testCase.ip)
+		got := isValidIPv6(testCase.ip)
 		if got != testCase.want {
 			t.Fatalf("%s: result does not match: got %v, want %v", testCase.name, got, testCase.want)
 		}
@@ -517,7 +517,7 @@ func TestIsValidIPv6Cidr(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		got := IsValidIPv6Cidr(testCase.ip)
+		got := isValidIPv6Cidr(testCase.ip)
 		if got != testCase.want {
 			t.Errorf("%s: result does not match: got %v, want %v", testCase.name, got, testCase.want)
 		}
