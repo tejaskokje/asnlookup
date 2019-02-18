@@ -4,9 +4,6 @@ import (
 	"asnlookup"
 	"bufio"
 	"fmt"
-	"io"
-	"io/ioutil"
-	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -46,7 +43,7 @@ func getConfig() (string, error) {
 
 func main() {
 
-	cfgStr, err := getConfig()
+	cfgStr, err := asnlookup.GetConfig()
 	if err != nil {
 		fmt.Printf("Error: %s\n", err)
 		os.Exit(1)
