@@ -9,16 +9,21 @@ import (
 )
 
 type Config struct {
-	IPCidrList string
-	IPToFind   string
+	IPCidrList       string
+	IPToFind         IPAddress
+	NewIPAddressFunc func(string, int) (IPAddress, error)
+	IsValidCidrFunc  func(string) bool
 }
 
 var (
-	ErrNoIPToFind          = errors.New("Please provide IPv4 or IPv6 address for ASN lookup")
-	ErrMoreThanOneIPToFind = errors.New("Please provide only one IP address")
+	ErrNoIPToFind            = errors.New("Please provide IPv4 or IPv6 address for ASN lookup")
+	ErrMoreThanOneIPToFind   = errors.New("Please provide only one IP address")
+	ErrInvalidInputIPAddress = errors.New("Invalid IP address in input")
 )
 
 func GetConfig() (*Config, error) {
+
+	cfg := &Config{}
 	args := os.Args[1:]
 	numArgs := len(args)
 	if numArgs == 0 {
@@ -28,9 +33,29 @@ func GetConfig() (*Config, error) {
 	}
 
 	reqIP := args[0]
+	var ipToFind IPAddress
+	if IsValidIPv4(reqIP) {
+		ipToFind, err := NewIPv4Address(reqIP+"/32", -1)
+		if err != nil {
+			return nil, err
+		}
+
+		cfg.IPToFind = ipToFind
+		cfg.NewIPAddressFunc = NewIPv4Address
+		cfg.IsValidCidrFunc = IsValidIPv4Cidr
+	} else if IsValidIPv6(reqIP) {
+		ipToFind, err := NewIPv6Address(reqIP+"/128", -1)
+		if err != nil {
+			return nil, err
+		}
+		cfg.IPToFind = ipToFind
+		cfg.NewIPAddressFunc = NewIPv6Address
+		cfg.IsValidCidrFunc = IsValidIPv6Cidr
+	} else {
+		return nil, ErrInvalidInputIPAddress
+	}
 
 	var reader io.Reader
-	cfg := &Config{}
 	configURL := "http://lg01.infra.ring.nlnog.net/table.txt"
 	configFile := os.Getenv("CONFIG_FILE_PATH")
 
@@ -58,7 +83,6 @@ func GetConfig() (*Config, error) {
 	}
 
 	cfg.IPCidrList = string(text)
-	cfg.IPToFind = reqIP
 
 	return cfg, nil
 }
