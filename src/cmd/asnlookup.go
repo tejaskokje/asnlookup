@@ -42,7 +42,6 @@ func getConfig() (string, error) {
 	}
 
 	return string(text), nil
-
 }
 
 func main() {
@@ -94,10 +93,6 @@ func main() {
 
 	scanner := bufio.NewScanner(strings.NewReader(cfgStr))
 	for scanner.Scan() {
-		if strings.Contains(scanner.Text(), "#") {
-			continue
-		}
-
 		parts := strings.Split(strings.Trim(scanner.Text(), " "), " ")
 		isValidCidr := isValidCidrFunc(parts[0])
 		if isValidCidr == true {

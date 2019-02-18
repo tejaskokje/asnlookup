@@ -10,6 +10,7 @@ import (
 
 var (
 	ErrInvalidIPv6Address = errors.New("Invalid IPv6 Address")
+	ErrInvalidIPv6Cidr    = errors.New("Invalid IPv6 CIDR Format")
 )
 
 type IPv6Address struct {
@@ -20,9 +21,12 @@ type IPv6Address struct {
 	asn     int
 }
 
+// Compile time check to ensure IPv6Address satiesfies IPAddress interface
+var _ IPAddress = &IPv6Address{}
+
 func NewIPv6Address(ipCidr string, asn int) (IPAddress, error) {
 	if IsValidIPv6Cidr(ipCidr) == false {
-		return nil, ErrInvalidIPV4Cidr
+		return nil, ErrInvalidIPv6Cidr
 	}
 
 	ipv6Address := IPv6Address{}
@@ -242,7 +246,7 @@ func intToIPv6Str(ip [2]uint64) (string, error) {
 	for _, part := range ip {
 		for i := 1; i <= 4; i++ {
 			octet := (part >> uint64(64-16*i)) & 0xFFFF
-			s := fmt.Sprintf("%x", octet)
+			s := fmt.Sprintf("%04x", octet)
 			ipStr = append(ipStr, s)
 		}
 	}
@@ -270,7 +274,6 @@ func intToIPv6Str(ip [2]uint64) (string, error) {
 }
 
 func IsValidIPv6Cidr(cidr string) bool {
-
 	parts := strings.Split(cidr, "/")
 	if len(parts) != 2 {
 		return false

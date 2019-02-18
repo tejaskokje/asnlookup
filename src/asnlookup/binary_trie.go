@@ -55,6 +55,7 @@ func NewNode() *Node {
 	}
 
 }
+
 func Insert(t *Trie, ip IPAddress) {
 	// Safe to ignore error below as key will already be sanitized by this time
 	root := t.Root

@@ -9,17 +9,8 @@ import (
 
 var (
 	ErrInvalidIPv4Address = errors.New("Invalid IPv4 Address")
-	ErrInvalidIPV4Cidr    = errors.New("Invalid IPv4 CIDR Format")
+	ErrInvalidIPv4Cidr    = errors.New("Invalid IPv4 CIDR Format")
 )
-
-type IPAddress interface {
-	GetString() string
-	GetNthHighestBit(n uint8) uint8
-	GetAsn() int
-	GetCidrLen() int
-	GetNumBitsInAddress() int
-	//DumpAddressInBinary() string
-}
 
 type IPv4Address struct {
 	cidrLen int
@@ -29,9 +20,12 @@ type IPv4Address struct {
 	asn     int
 }
 
+// Compile time check to ensure IPv4Address satiesfies IPAddress interface
+var _ IPAddress = &IPv4Address{}
+
 func NewIPv4Address(ipCidr string, asn int) (IPAddress, error) {
 	if IsValidIPv4Cidr(ipCidr) == false {
-		return nil, ErrInvalidIPV4Cidr
+		return nil, ErrInvalidIPv4Cidr
 	}
 
 	ipv4Address := IPv4Address{}

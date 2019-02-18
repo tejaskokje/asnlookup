@@ -5,6 +5,242 @@ import (
 	"testing"
 )
 
+func TestIPv4AddressGetString(t *testing.T) {
+	testCases := []struct {
+		name    string
+		ipCidr  string
+		asn     int
+		wantStr string
+		err     error
+	}{
+		{
+			name:    "Parse Valid IPv4 CIDR",
+			ipCidr:  "192.168.1.0/24",
+			asn:     350,
+			wantStr: "192.168.1.0",
+			err:     nil,
+		},
+		{
+			name:    "Parse Incorrect CIDR Address That Can Be Corrected",
+			ipCidr:  "10.10.33.4/19",
+			asn:     350,
+			wantStr: "10.10.32.0",
+			err:     nil,
+		},
+		{
+			name:    "Parse Incorrect CIDR Address",
+			ipCidr:  "10.10.33.4/33",
+			asn:     350,
+			wantStr: "",
+			err:     ErrInvalidIPv4Cidr,
+		},
+	}
+
+	for _, testCase := range testCases {
+		ipv4Address, err := NewIPv4Address(testCase.ipCidr, testCase.asn)
+		if err != testCase.err {
+			t.Fatalf("%s: received error does not match: got %v, want %v", testCase.name, err, testCase.err)
+		}
+
+		if err == nil {
+			gotStr := ipv4Address.GetString()
+			if gotStr != testCase.wantStr {
+				t.Fatalf("%s: result does not match: got %v, want %v", testCase.name, gotStr, testCase.wantStr)
+			}
+		}
+	}
+}
+
+func TestIPv4AddressGetNthHighestBit(t *testing.T) {
+	testCases := []struct {
+		name   string
+		ipCidr string
+		asn    int
+		nthBit uint8
+		want   uint8
+		err    error
+	}{
+		{
+			name:   "Get 5th Bit in IPv4 Address",
+			ipCidr: "192.168.1.0/24",
+			asn:    350,
+			nthBit: 5,
+			want:   0,
+			err:    nil,
+		},
+		{
+			name:   "Get 8th Bit in IPv4 Address",
+			ipCidr: "255.168.1.0/24",
+			asn:    350,
+			nthBit: 8,
+			want:   1,
+			err:    nil,
+		},
+		{
+			name:   "Get 11th Bit in IPv4 Address",
+			ipCidr: "255.168.1.0/24",
+			asn:    350,
+			nthBit: 11,
+			want:   1,
+			err:    nil,
+		},
+		{
+			name:   "Get 24th Bit in IPv4 Address",
+			ipCidr: "255.168.1.0/24",
+			asn:    350,
+			nthBit: 24,
+			want:   1,
+			err:    nil,
+		},
+		{
+			name:   "Get 30th Bit in IPv4 Address",
+			ipCidr: "255.168.1.1/30",
+			asn:    350,
+			nthBit: 30,
+			want:   0,
+			err:    nil,
+		},
+	}
+
+	for _, testCase := range testCases {
+		ipv4Address, err := NewIPv4Address(testCase.ipCidr, testCase.asn)
+		if err != testCase.err {
+			t.Fatalf("%s: received error does not match: got %v, want %v", testCase.name, err, testCase.err)
+		}
+
+		if err == nil {
+			got := ipv4Address.GetNthHighestBit(testCase.nthBit)
+			if got != testCase.want {
+				t.Fatalf("%s: result does not match: got %v, want %v", testCase.name, got, testCase.want)
+			}
+		}
+	}
+}
+
+func TestIPv4AddressGetAsn(t *testing.T) {
+	testCases := []struct {
+		name   string
+		ipCidr string
+		asn    int
+		want   int
+		err    error
+	}{
+		{
+			name:   "Parse Valid IPv4 CIDR",
+			ipCidr: "192.168.1.0/24",
+			asn:    350,
+			want:   350,
+			err:    nil,
+		},
+		{
+			name:   "Parse Incorrect CIDR Address That Can Be Corrected",
+			ipCidr: "10.10.33.4/19",
+			asn:    351,
+			want:   351,
+			err:    nil,
+		},
+		{
+			name:   "Parse Incorrect CIDR Address",
+			ipCidr: "10.10.33.4/33",
+			asn:    352,
+			want:   352,
+			err:    ErrInvalidIPv4Cidr,
+		},
+	}
+
+	for _, testCase := range testCases {
+		ipv4Address, err := NewIPv4Address(testCase.ipCidr, testCase.asn)
+		if err != testCase.err {
+			t.Fatalf("%s: received error does not match: got %v, want %v", testCase.name, err, testCase.err)
+		}
+
+		if err == nil {
+			got := ipv4Address.GetAsn()
+			if got != testCase.want {
+				t.Fatalf("%s: result does not match: got %v, want %v", testCase.name, got, testCase.want)
+			}
+		}
+	}
+}
+
+func TestIPv4AddressGetCidrLen(t *testing.T) {
+	testCases := []struct {
+		name   string
+		ipCidr string
+		asn    int
+		want   int
+		err    error
+	}{
+		{
+			name:   "Parse Valid IPv4 CIDR",
+			ipCidr: "192.168.1.0/24",
+			asn:    350,
+			want:   24,
+			err:    nil,
+		},
+		{
+			name:   "Parse Incorrect CIDR Address That Can Be Corrected",
+			ipCidr: "10.10.33.4/19",
+			asn:    351,
+			want:   19,
+			err:    nil,
+		},
+	}
+
+	for _, testCase := range testCases {
+		ipv4Address, err := NewIPv4Address(testCase.ipCidr, testCase.asn)
+		if err != testCase.err {
+			t.Fatalf("%s: received error does not match: got %v, want %v", testCase.name, err, testCase.err)
+		}
+
+		if err == nil {
+			got := ipv4Address.GetCidrLen()
+			if got != testCase.want {
+				t.Fatalf("%s: result does not match: got %v, want %v", testCase.name, got, testCase.want)
+			}
+		}
+	}
+}
+
+func TestIPv4AddressGetNumBitsInAddress(t *testing.T) {
+	testCases := []struct {
+		name   string
+		ipCidr string
+		asn    int
+		want   int
+		err    error
+	}{
+		{
+			name:   "Parse Valid IPv4 CIDR",
+			ipCidr: "192.168.1.0/24",
+			asn:    350,
+			want:   32,
+			err:    nil,
+		},
+		{
+			name:   "Parse Incorrect CIDR Address That Can Be Corrected",
+			ipCidr: "10.10.33.4/19",
+			asn:    351,
+			want:   32,
+			err:    nil,
+		},
+	}
+
+	for _, testCase := range testCases {
+		ipv4Address, err := NewIPv4Address(testCase.ipCidr, testCase.asn)
+		if err != testCase.err {
+			t.Fatalf("%s: received error does not match: got %v, want %v", testCase.name, err, testCase.err)
+		}
+
+		if err == nil {
+			got := ipv4Address.GetNumBitsInAddress()
+			if got != testCase.want {
+				t.Fatalf("%s: result does not match: got %v, want %v", testCase.name, got, testCase.want)
+			}
+		}
+	}
+}
+
 func TestParseIPv4(t *testing.T) {
 	testCases := []struct {
 		name string
