@@ -22,6 +22,7 @@ Example:
     
     asnlookup 2001:db8:0:b::2a:1a
 
+Note that for IPv6, result IPv6 CIDR block will always be displayed in uncompressed format.
 
 Design
 ------

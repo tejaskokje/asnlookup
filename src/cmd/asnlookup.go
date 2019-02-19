@@ -17,6 +17,10 @@ func main() {
 
 	// Do a lookup
 	nodeInfoList := asnlookup.Find(cfg)
+	if len(nodeInfoList) == 0 {
+		os.Exit(1)
+	}
+
 	for _, info := range nodeInfoList {
 		fmt.Printf("%s/%d %d\n", info.Subnet, info.Cidr, info.Asn)
 	}
