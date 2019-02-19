@@ -18,6 +18,7 @@ func TestGetConfig(t *testing.T) {
 			name: "Read Configuration From URL",
 			setUpFunc: func() {
 				os.Args = append(os.Args, "8.8.8.8")
+
 			},
 			ipToFindStr: "8.8.8.8",
 			err:         nil,
@@ -25,7 +26,7 @@ func TestGetConfig(t *testing.T) {
 		{
 			name: "Read Configuration From Local File",
 			setUpFunc: func() {
-				os.Setenv("CONFIG_FILE_PATH", "./cfgfile.txt")
+				os.Setenv("CONFIG_FILE_PATH", "./config_file_test.txt")
 			},
 			ipToFindStr: "8.8.8.8",
 			ipAddressListStr: []string{
@@ -37,6 +38,11 @@ func TestGetConfig(t *testing.T) {
 			asnList: []int{350, 352, 351, 156},
 			err:     nil,
 		},
+	}
+
+	_, cfgFileDefined := os.LookupEnv("CONFIG_FILE_PATH")
+	if cfgFileDefined {
+		t.Fatal("Please unset CONFIG_FILE_PATH environment variable before running tests")
 	}
 
 	for _, testCase := range testCases {

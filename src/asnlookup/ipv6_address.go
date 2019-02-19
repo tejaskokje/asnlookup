@@ -195,25 +195,33 @@ func parseIPv6(ipStr string) ([]byte, error) {
 
 func isValidIPv6(ip string) bool {
 
-	cHextets := strings.Split(ip, "::")
-	if len(cHextets) > 2 {
+	cHextects := strings.Split(ip, "::")
+	if len(cHextects) > 2 {
 		return false
 	}
 
-	if len(cHextets) == 2 {
-		leftHextets := strings.Split(cHextets[0], ":")
-		rightHextets := strings.Split(cHextets[1], ":")
-		if len(leftHextets)+len(rightHextets) > 7 {
+	if len(cHextects) == 2 {
+		// If there are ":" at the end of first hextect or at the beginning of second hextect,
+		// then we have invalid IPv6 format
+		if (len(cHextects[0]) > 0 && cHextects[0][len(cHextects[0])-1] == ':') ||
+			(len(cHextects[1]) > 0 && cHextects[1][0] == ':') {
 			return false
 		}
 
-		for _, hextetSlice := range [][]string{leftHextets, rightHextets} {
-			for _, hextet := range hextetSlice {
-				if len(hextet) > 4 {
+		leftHextects := strings.Split(cHextects[0], ":")
+		rightHextects := strings.Split(cHextects[1], ":")
+
+		if len(leftHextects)+len(rightHextects) > 7 {
+			return false
+		}
+
+		for _, hextectSlice := range [][]string{leftHextects, rightHextects} {
+			for _, hextect := range hextectSlice {
+				if len(hextect) > 4 {
 					return false
 				}
 
-				for _, h := range hextet {
+				for _, h := range hextect {
 					if (h >= '0' && h <= '9') || (h >= 'a' && h <= 'f') ||
 						(h >= 'A' && h <= 'F') {
 						continue
@@ -226,8 +234,8 @@ func isValidIPv6(ip string) bool {
 		}
 
 	} else {
-		uHextets := strings.Split(ip, ":")
-		if len(uHextets) != 8 {
+		uHextects := strings.Split(ip, ":")
+		if len(uHextects) != 8 {
 			return false
 		}
 	}

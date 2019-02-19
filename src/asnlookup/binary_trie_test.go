@@ -130,7 +130,7 @@ func TestInsertFindIPv6(t *testing.T) {
 		for _, ipCidr := range testCase.ipCidrList {
 			ipv6Address, err := newIPv6Address(ipCidr.ip, ipCidr.asn)
 			if err != testCase.err {
-				t.Fatalf("%s: received error for %s/%d does not match: got %v, want %v", testCase.name, ipCidr.ip, ipCidr.asn, err, testCase.err)
+				t.Fatalf("%s: received error for %s %d does not match: got %v, want %v", testCase.name, ipCidr.ip, ipCidr.asn, err, testCase.err)
 			}
 
 			cfg.IPAddressList = append(cfg.IPAddressList, ipv6Address)
